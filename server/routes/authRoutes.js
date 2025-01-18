@@ -69,30 +69,23 @@ router.post('/register', async (req, res) => {
 
 // Login user route
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'User not found' });
 
-    try {
-        const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ error: 'User not found' });
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
-        // Check if the password matches
-        const isMatch = await bcrypt.compare(password, user.passwordHash);
-        if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+    // Create JWT token with user role
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        // Create JWT token with expiration of 1 hour
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-
-        // Optionally, issue a refresh token (this can be used to get a new JWT after it expires)
-        const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-        // Send back the JWT and refresh token
-        res.json({ token, refreshToken });
-
-    } catch (err) {
-        res.status(500).json({ error: 'Internal server error. Please try again later.' });
-    }
+    res.json({ token });  // Send the token with the role embedded
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error. Please try again later.' });
+  }
 });
+
 
 // Refresh token route
 router.post('/refresh-token', async (req, res) => {
