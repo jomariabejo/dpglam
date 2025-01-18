@@ -7,32 +7,65 @@ const router = express.Router();
 
 // Register user
 router.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
+  const { username, email, password, role } = req.body;
 
-    // Check if email and password are provided
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required' });
-    }
+  // Check if email and password are provided
+  if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+  }
 
-    try {
-        // Check if the user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ error: 'User with this email already exists' });
-        }
+  try {
+      // Check if the user already exists
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+          return res.status(400).json({ error: 'User with this email already exists' });
+      }
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create the user
-        const user = new User({ username, email, passwordHash: hashedPassword });
-        await user.save();
+      // Generate the token (using email as a payload)
+      const token = jwt.sign({ email }, 'your_jwt_secret', { expiresIn: '1h' });
 
-        res.status(201).json({ message: 'User registered successfully' });
-    } catch (err) {
-        res.status(500).json({ error: 'Internal server error. Please try again later.' });
-    }
+      // Token expiry date (1 hour from now)
+      const tokenExpiry = Date.now() + 60 * 60 * 1000; // 1 hour in milliseconds
+
+      console.log('Generated Token:', token); // Log the generated token for debugging
+
+      // If role is not provided, default to 'customer'
+      const userRole = role || 'customer'; // Set role to 'customer' if not provided
+
+      // Create a new user and include the role
+      const user = new User({
+          username,
+          email,
+          passwordHash: hashedPassword,
+          token,
+          tokenExpiry,
+          role: userRole // Use the role from the request body
+      });
+
+      // Save the user to the database
+      await user.save();
+
+      console.log('User saved with token:', user);  // Log the user object after saving
+
+      // Respond to the client with success message and token
+      res.status(201).json({
+          message: 'User registered successfully',
+          token
+      });
+
+  } catch (err) {
+      console.error('Error during registration:', err); // Log any errors
+      res.status(500).json({ error: 'Internal server error. Please try again later.' });
+  }
 });
+
+
+
+
+
 
 // Login user route
 router.post('/login', async (req, res) => {

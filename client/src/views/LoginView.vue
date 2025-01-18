@@ -38,9 +38,7 @@ export default {
           email: this.email,
           password: this.password,
         });
-
         console.log('Login successful, response:', response);  // Check the full response
-
         // Check if a token was returned
         if (response.data.token) {
           AuthService.setToken(response.data.token) // Store token in localStorage
@@ -52,8 +50,8 @@ export default {
         console.error('Login error:', error);  // Log the error
         this.errorMessage = error.response?.data?.error || 'An error occurred';
       }
-}
   },
+}
 }
 </script>
 
