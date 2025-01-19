@@ -6,6 +6,7 @@ export const AuthService = {
   },
   setToken(token) {
     localStorage.setItem('auth_token', token);
+    console.log("THE SERVER TOKEN IS : " + token)
   },
   removeToken() {
     localStorage.removeItem('auth_token');
@@ -35,6 +36,36 @@ export const AuthService = {
       return decoded.role || null; // Assuming the role is inside the token payload
     } catch (error) {
       console.error("Error decoding token to get role:", error);
+      return null;
+    }
+  },
+  getUserEmail() {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.email || null; // Assuming the email is inside the token payload
+    } catch (error) {
+      console.error("Error decoding token to get email:", error);
+      return null;
+    }
+  },
+  getUsername() {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.username || null; // Assuming the username is inside the token payload
+    } catch (error) {
+      console.error("Error decoding token to get username:", error);
+      return null;
+    }
+  },
+  decodeToken(token) {
+    try {
+      return jwtDecode(token);
+    } catch (error) {
+      console.error("Error decoding token:", error);
       return null;
     }
   }

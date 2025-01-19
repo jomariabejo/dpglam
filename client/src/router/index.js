@@ -39,10 +39,28 @@ const routes = [
     },
   },
   {
-    path: '/forbidden',
+    path: '/forbidden', // Forbidden Jutsu by Orochimaru
     name: 'Forbidden',
     component: () => import('../views/ForbiddenView.vue'), // Create a Forbidden view
-  }
+  },
+
+// USER ROUTER
+  {
+    path: '/myprofile',
+    name: 'MyProfileView',
+    component: () => import('../views/customer/MyProfileView.vue'),
+    meta: { requiresAuth: true }, // Only allow admins to access
+  },
+
+
+  {
+    path: '/dashboard',
+    name: 'AdminDashboardView',
+    component: () => import('../views/admin/AdminDashboardView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
+  },
+
+  
 ];
 
 // Create the router

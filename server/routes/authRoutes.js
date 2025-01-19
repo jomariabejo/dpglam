@@ -9,67 +9,50 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
   const { username, email, password, role } = req.body;
 
-  // Check if email and password are provided
   if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
   }
 
   try {
-      // Check if the user already exists
       const existingUser = await User.findOne({ email });
       if (existingUser) {
           return res.status(400).json({ error: 'User with this email already exists' });
       }
 
-      // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
+      const userRole = role || 'customer';
 
-      // Generate the token (using email as a payload)
-      const token = jwt.sign({ email }, 'your_jwt_secret', { expiresIn: '1h' });
-
-      // Token expiry date (1 hour from now)
-      const tokenExpiry = Date.now() + 60 * 60 * 1000; // 1 hour in milliseconds
-
-      console.log('Generated Token:', token); // Log the generated token for debugging
-
-      // If role is not provided, default to 'customer'
-      const userRole = role || 'customer'; // Set role to 'customer' if not provided
-
-      // Create a new user and include the role
       const user = new User({
           username,
           email,
           passwordHash: hashedPassword,
-          token,
-          tokenExpiry,
-          role: userRole // Use the role from the request body
+          role: userRole
       });
 
-      // Save the user to the database
       await user.save();
 
-      console.log('User saved with token:', user);  // Log the user object after saving
+      // Create the JWT token (sign using the JWT_SECRET from .env)
+      const token = jwt.sign(
+        { userId: user._id, username: user.username, email: user.email, role: user.role },
+        process.env.JWT_SECRET, // Use the secret from the .env file
+        { expiresIn: '1h' }
+      );
 
-      // Respond to the client with success message and token
       res.status(201).json({
           message: 'User registered successfully',
           token
       });
 
   } catch (err) {
-      console.error('Error during registration:', err); // Log any errors
       res.status(500).json({ error: 'Internal server error. Please try again later.' });
   }
 });
 
 
-
-
-
-
-// Login user route
+// Login user
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: 'User not found' });
@@ -77,10 +60,15 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
-    // Create JWT token with user role
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // Create JWT token (using JWT_SECRET from .env)
+    const token = jwt.sign(
+      { userId: user._id, username: user.username, email: user.email, role: user.role },
+      process.env.JWT_SECRET,  // This ensures you're using the secret from the .env file
+      { expiresIn: '7h' }
+    );
 
-    res.json({ token });  // Send the token with the role embedded
+    res.json({ token });
+
   } catch (err) {
     res.status(500).json({ error: 'Internal server error. Please try again later.' });
   }
@@ -149,6 +137,46 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
+
+
+// Update user profile route
+router.put('/user/update', async (req, res) => {
+  const { username, email } = req.body;
+
+  // Ensure user is authenticated
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized access' });
+  }
+
+  try {
+    // Update the user's profile fields (like username and email)
+    req.user.username = username || req.user.username;
+    req.user.email = email || req.user.email;
+
+    await req.user.save();
+
+    res.status(200).json({ message: 'Profile updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Delete user account route
+router.delete('/user/delete', async (req, res) => {
+  // Ensure user is authenticated
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized access' });
+  }
+
+  try {
+    // Delete the user from the database
+    await req.user.remove();
+
+    res.status(200).json({ message: 'Account deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+});
 
 // Protect your routes using this middleware
 router.get('/products', authenticateToken, async (req, res) => {
