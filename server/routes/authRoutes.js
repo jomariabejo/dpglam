@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Import jsonwebtoken
 const User = require('../models/User');
+const authenticateUser = require('../middleware/authenticateUser');
 
 const router = express.Router();
 
@@ -139,27 +140,44 @@ const authenticateToken = (req, res, next) => {
 };
 
 
-// Update user profile route
-router.put('/user/update', async (req, res) => {
+// PUT /user/update - Update user profile
+router.put('/user/update', authenticateUser, async (req, res) => {
   const { username, email } = req.body;
 
-  // Ensure user is authenticated
-  if (!req.user) {
-    return res.status(401).json({ error: 'Unauthorized access' });
+  // Ensure username or email is provided
+  if (!username && !email) {
+    return res.status(400).json({ error: 'Username or email must be provided' });
   }
 
   try {
-    // Update the user's profile fields (like username and email)
-    req.user.username = username || req.user.username;
-    req.user.email = email || req.user.email;
+    // Find the user by their decoded ID from the token (attached in the authenticateUser middleware)
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-    await req.user.save();
+    // Update the user fields if provided
+    if (username) {
+      user.username = username;
+    }
+    if (email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+        return res.status(400).json({ error: 'Email is already in use by another user' });
+      }
+      user.email = email;
+    }
+
+    // Save the updated user
+    await user.save();
 
     res.status(200).json({ message: 'Profile updated successfully' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update profile' });
+    res.status(500).json({ error: 'Failed to update profile. Please try again later.' });
   }
 });
+
+
 
 // Delete user account route
 router.delete('/user/delete', async (req, res) => {
