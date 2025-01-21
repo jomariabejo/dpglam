@@ -142,15 +142,14 @@ const authenticateToken = (req, res, next) => {
 
 // PUT /user/update - Update user profile
 router.put('/user/update', authenticateUser, async (req, res) => {
-  const { username, email } = req.body;
+  const { username, email, password } = req.body;
 
-  // Ensure username or email is provided
-  if (!username && !email) {
-    return res.status(400).json({ error: 'Username or email must be provided' });
+  // Ensure at least one field is provided
+  if (!username && !email && !password) {
+    return res.status(400).json({ error: 'Username, email, or password must be provided' });
   }
 
   try {
-    // Find the user by their decoded ID from the token (attached in the authenticateUser middleware)
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -158,8 +157,13 @@ router.put('/user/update', authenticateUser, async (req, res) => {
 
     // Update the user fields if provided
     if (username) {
+      const existingUsername = await User.findOne({ username });
+      if (existingUsername && existingUsername._id.toString() !== user._id.toString()) {
+        return res.status(400).json({ error: 'Username is already in use by another user' });
+      }
       user.username = username;
     }
+
     if (email) {
       const existingUser = await User.findOne({ email });
       if (existingUser && existingUser._id.toString() !== user._id.toString()) {
@@ -168,18 +172,23 @@ router.put('/user/update', authenticateUser, async (req, res) => {
       user.email = email;
     }
 
-    // Save the updated user
-    await user.save();
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.passwordHash = hashedPassword;  // Save the new hashed password
+    }
 
+    await user.save();
     res.status(200).json({ message: 'Profile updated successfully' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to update profile. Please try again later.' });
   }
 });
 
 
 
-// Delete user account route
+
+
 router.delete('/user/delete', async (req, res) => {
   // Ensure user is authenticated
   if (!req.user) {
@@ -187,11 +196,12 @@ router.delete('/user/delete', async (req, res) => {
   }
 
   try {
-    // Delete the user from the database
-    await req.user.remove();
+    // Delete the user from the database using the User model's findByIdAndDelete method
+    await User.findByIdAndDelete(req.user._id);
 
     res.status(200).json({ message: 'Account deleted successfully' });
   } catch (err) {
+    console.error('Error deleting user account:', err);
     res.status(500).json({ error: 'Failed to delete account' });
   }
 });

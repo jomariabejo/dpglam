@@ -49,10 +49,8 @@ const routes = [
     path: '/myprofile',
     name: 'MyProfileView',
     component: () => import('../views/customer/MyProfileView.vue'),
-    meta: { requiresAuth: true }, // Only allow admins to access
+    meta: { requiresAuth: true },
   },
-
-
   {
     path: '/dashboard',
     name: 'AdminDashboardView',
