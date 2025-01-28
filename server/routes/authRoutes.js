@@ -207,11 +207,11 @@ router.delete('/user/delete', async (req, res) => {
 });
 
 // Protect your routes using this middleware
-router.get('/products', authenticateToken, async (req, res) => {
-  // Handle the logic for retrieving products
-  const products = await Product.find();
-  res.json(products);
-});
+// router.get('/products', authenticateToken, async (req, res) => {
+//   // Handle the logic for retrieving products
+//   const products = await Product.find();
+//   res.json(products);
+// });
 
 
 router.use(async (req, res, next) => {

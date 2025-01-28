@@ -1,0 +1,9 @@
+{
+    "name": "Sample Product",
+    "description": "This is a sample product description.",
+    "price": 19.99,
+    "stockQuantity": 100,
+    "category": "Electronics",
+    "sku": "SP123456",
+    "image": "http://example.com/sample-product-image.jpg"
+}
