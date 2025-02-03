@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const PurchaseListRoutes = require('./routes/PurchaseListRoutes');
 const productRoutes = require('./routes/productRoutes')
 
 // Initialize environment variables
@@ -19,9 +20,12 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
     .then(() => console.log('MongoDB connected'))
     .catch((err) => console.log(err));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/auth', userRoutes);
-app.use('/api/auth', productRoutes);
+// Use distinct prefixes for each route
+app.use('/api/auth', authRoutes); // Auth routes
+app.use('/api/user', userRoutes); // User routes
+app.use('/api/products', productRoutes); // Product routes
+app.use('/api/purchase', PurchaseListRoutes); // Purchase list routes
 
 module.exports = app;
+
+
