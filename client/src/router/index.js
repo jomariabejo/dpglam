@@ -15,6 +15,12 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
   },
   {
+    path: '/admin/fakestore',
+    name: 'AdminProductsView',
+    component: () => import('../views/admin/AdminProductsVew.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
+  },
+  {
     path: '/about',
     name: 'About',
     component: () => import('../views/AboutView.vue'),

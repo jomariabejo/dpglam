@@ -6,7 +6,7 @@ export const AuthService = {
   },
   setToken(token) {
     localStorage.setItem('auth_token', token);
-    console.log("THE SERVER TOKEN IS : " + token)
+    console.log("THE SERVER TOKEN IS : " + token);
   },
   removeToken() {
     localStorage.removeItem('auth_token');
@@ -38,6 +38,9 @@ export const AuthService = {
       console.error("Error decoding token to get role:", error);
       return null;
     }
+  },
+  isAdmin() {
+    return this.getUserRole() === 'admin'; // Check if the role is 'admin'
   },
   getUserEmail() {
     const token = this.getToken();
