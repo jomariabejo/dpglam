@@ -15,6 +15,12 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
   },
   {
+    path: '/admin/users',
+    name: 'AdminUsersView',
+    component: () => import('../views/admin/AdminUsersView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
+  },
+  {
     path: '/admin/fakestore',
     name: 'AdminProductsView',
     component: () => import('../views/admin/AdminProductsVew.vue'),
@@ -24,7 +30,7 @@ const routes = [
     path: '/about',
     name: 'About',
     component: () => import('../views/AboutView.vue'),
-    meta: { requiresAuth: true }, // Protect this route
+    meta: { requiresAuth: true }, 
   },
   {
     path: '/login',
@@ -64,6 +70,18 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
   },
 
+// CUSTOMER ROUTER
+  {
+    path: '/public/products',
+    name: 'CustomerProductsView',
+    component: () => import('../views/customer/CustomerProductsView.vue'),
+  },
+  {
+    path: '/my-orders',
+    name: 'CustomerOrdersView',
+    component: () => import('../views/customer/MyOrdersView.vue'),
+    meta: { requiresAuth: true}
+  },
   
 ];
 

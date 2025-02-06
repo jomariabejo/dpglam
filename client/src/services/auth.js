@@ -6,7 +6,6 @@ export const AuthService = {
   },
   setToken(token) {
     localStorage.setItem('auth_token', token);
-    console.log("THE SERVER TOKEN IS : " + token);
   },
   removeToken() {
     localStorage.removeItem('auth_token');

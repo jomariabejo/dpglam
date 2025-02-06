@@ -7,6 +7,9 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes')
 const fakeStoreRoutes = require('./routes/fakeStoreRoute')
+const dashboardRoutes = require('./routes/dashboardRoutes')
+const orderRoutes = require('./routes/orderRoutes')
+
 
 // Initialize environment variables
 dotenv.config();
@@ -24,6 +27,8 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', userRoutes);
 app.use('/api/auth', productRoutes);
-app.use('/api/auth', fakeStoreRoutes)
+app.use('/api/auth', fakeStoreRoutes);
+app.use("/api/auth", dashboardRoutes);
+app.use("/api/auth", orderRoutes);
 
 module.exports = app;

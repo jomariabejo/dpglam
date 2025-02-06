@@ -1,10 +1,22 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Order = require('../models/Order');
+const Product = require('../models/Product');
 const authenticateUser = require('../middleware/authenticateUser');  // Assuming you have this middleware for authentication
+const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
+router.get('/admin/users', authenticateToken, isAdmin, async (req, res) => {
+  try {
+      const users = await User.find().select('-passwordHash'); // Exclude passwordHash
+      res.status(200).json({ users });
+  } catch (err) {
+      console.error('Error fetching users:', err);
+      res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
 
 // PUT /user/update - Update user profile
 router.put('/user/update', authenticateUser, async (req, res) => {
@@ -50,26 +62,71 @@ router.put('/user/update', authenticateUser, async (req, res) => {
       res.status(500).json({ error: 'Failed to update profile. Please try again later.' });
     }
   });
-  
 
-// DELETE /user/delete - Delete user account
-router.delete('/user/delete', authenticateUser, async (req, res) => {
-    // Ensure user is authenticated
-    if (!req.user) {
-      return res.status(401).json({ error: 'Unauthorized access' });
-    }
-  
+
+  router.delete('/user/delete', authenticateUser, async (req, res) => {
     try {
-      // Delete the user from the database using the User model's findByIdAndDelete method
-      await User.findByIdAndDelete(req.user._id);
-  
-      res.status(200).json({ message: 'Account deleted successfully' });
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        await User.findByIdAndDelete(userId);
+        res.status(200).json({ message: 'Account deleted successfully' });
     } catch (err) {
-      console.error('Error deleting user account:', err);
-      res.status(500).json({ error: 'Failed to delete account' });
+        console.error('Error deleting user:', err);
+        res.status(500).json({ error: 'Failed to delete account' });
     }
-  });
-  
+});
+
+// ADMIN can update user details
+router.put('/user/update/:id/:username/:role', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const newUsername = req.params.username;
+    const newRole = req.params.role;
+
+    // Find and update the user in one step
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { 
+        username: newUsername, 
+        role: newRole,
+        updatedAt: new Date() // Ensure `updatedAt` is refreshed
+      },
+      { new: true } // Returns the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found 🥲' });
+    }
+
+    res.status(200).json({ message: 'User updated successfully', user: updatedUser });
+  } catch (err) {
+    console.error('Error updating user:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.delete('/user/delete/:id', authenticateToken, isAdmin, async (req, res) => {
+  try {
+      const userId = req.params.id; // Get user ID from URL parameter
+      const user = await User.findById(userId);
+      
+      if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+
+      await User.findByIdAndDelete(userId);
+      res.status(200).json({ message: 'User deleted successfully' });
+  } catch (err) {
+      console.error('Error deleting user:', err);
+      res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
   
 // GET /user/count - Get total number of users
 router.get('/user/count', authenticateUser, async (req, res) => {
@@ -83,5 +140,23 @@ router.get('/user/count', authenticateUser, async (req, res) => {
       res.status(500).json({ error: 'Failed to count users' });
     }
   });
+
+
+  // router.get("user/dashboard/stats", authenticateToken, isAdmin, async (req, res) => {
+  //   try {
+  //     const totalOrders = await Order.countDocuments();
+  //     const totalUsers = await User.countDocuments();
+  //     const totalProducts = await Product.countDocuments();
+  
+  //     res.status(200).json({
+  //       orders: totalOrders,
+  //       users: totalUsers,
+  //       purchases: totalProducts, 
+  //     });
+  //   } catch (error) {
+  //     console.error("Error fetching dashboard stats:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // });
 
 module.exports = router;
