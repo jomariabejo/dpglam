@@ -2,6 +2,7 @@
     <nav class="flex flex-row justify-between items-center p-4 shadow-lg">
         <div class="flex justify-center items-center mx-auto">
             <div class="hidden md:flex space-x-6">
+                <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/dashboard"></RouterLink>
                 <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/admin/fakestore">Products</RouterLink>
                 <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/admin/users">Users</RouterLink>
                 <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/myprofile">My Profile</RouterLink>

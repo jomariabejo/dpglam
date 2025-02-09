@@ -29,7 +29,7 @@ export default {
 
     // Fetch stats from API
     const fetchStats = async () => {
-  const token = AuthService.getToken(); // Retrieve token
+  const token = AuthService.getToken(); 
   if (!token) {
     console.error("Authorization token is missing");
     return;
@@ -37,7 +37,7 @@ export default {
 
   try {
     const response = await axios.get("http://localhost:5000/api/auth/admin/dashboard/stats", {
-      headers: { Authorization: `Bearer ${token}` }, // Send the token here
+      headers: { Authorization: `Bearer ${token}` }, 
     });
     stats.value = response.data;
   } catch (error) {
