@@ -7,7 +7,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
       <DashboardCard title="Total Orders" :count="stats.orders" color="blue" icon="shopping-cart" />
       <DashboardCard title="Total Users" :count="stats.users" color="green" icon="users" />
-      <DashboardCard title="Total Purchases" :count="stats.purchases" color="purple" icon="credit-card" />
+      <!-- <DashboardCard title="Total Purchases" :count="stats.purchases" color="purple" icon="credit-card" /> -->
     </div>
   </div>
 </template>
@@ -15,6 +15,7 @@
 <script>
 import { ref, onMounted } from "vue";
 import DashboardCard from "@/components/DashboardCard.vue"; // Import reusable card component
+import { AuthService } from "@/services/auth";
 import axios from "axios";
 
 export default {
@@ -24,18 +25,27 @@ export default {
     const stats = ref({
       orders: 0,
       users: 0,
-      purchases: 0
     });
 
     // Fetch stats from API
     const fetchStats = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/auth/dashboard/stats");
-        stats.value = response.data;
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-      }
-    };
+  const token = AuthService.getToken(); // Retrieve token
+  if (!token) {
+    console.error("Authorization token is missing");
+    return;
+  }
+
+  try {
+    const response = await axios.get("http://localhost:5000/api/auth/admin/dashboard/stats", {
+      headers: { Authorization: `Bearer ${token}` }, // Send the token here
+    });
+    stats.value = response.data;
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+  }
+};
+
+
 
     onMounted(fetchStats); // Fetch data on component mount
 
