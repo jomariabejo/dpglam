@@ -3,12 +3,12 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
-const productRoutes = require('./routes/productRoutes')
-const fakeStoreRoutes = require('./routes/fakeStoreRoute')
-const dashboardRoutes = require('./routes/dashboardRoutes')
-const orderRoutes = require('./routes/orderRoutes')
+const authRoutes = require('./routes/security/authRoutes');
+const userRoutes = require('./routes/business/userRoutes');
+const productRoutes = require('./routes/business/productRoutes')
+const fakeStoreRoutes = require('./routes/external_api_sampler/fakeStoreRoute')
+const dashboardRoutes = require('./routes/admin/dashboardRoutes')
+const orderRoutes = require('./routes/business/orderRoutes')
 
 
 // Initialize environment variables

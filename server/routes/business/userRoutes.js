@@ -1,10 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const Order = require('../models/Order');
-const Product = require('../models/Product');
-const authenticateUser = require('../middleware/authenticateUser');  // Assuming you have this middleware for authentication
-const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
+const User = require('../../models/User');
+const Order = require('../../models/Order');
+const Product = require('../../models/Product');
+const authenticateUser = require('../../middleware/authenticateUser');  // Assuming you have this middleware for authentication
+const { authenticateToken, isAdmin } = require('../../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -140,23 +140,5 @@ router.get('/user/count', authenticateUser, async (req, res) => {
       res.status(500).json({ error: 'Failed to count users' });
     }
   });
-
-
-  // router.get("user/dashboard/stats", authenticateToken, isAdmin, async (req, res) => {
-  //   try {
-  //     const totalOrders = await Order.countDocuments();
-  //     const totalUsers = await User.countDocuments();
-  //     const totalProducts = await Product.countDocuments();
-  
-  //     res.status(200).json({
-  //       orders: totalOrders,
-  //       users: totalUsers,
-  //       purchases: totalProducts, 
-  //     });
-  //   } catch (error) {
-  //     console.error("Error fetching dashboard stats:", error);
-  //     res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // });
 
 module.exports = router;
