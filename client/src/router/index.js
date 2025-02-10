@@ -82,7 +82,11 @@ const routes = [
     component: () => import('../views/customer/MyOrdersView.vue'),
     meta: { requiresAuth: true}
   },
-  
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFoundView.vue'),
+  }  
 ];
 
 // Create the router
@@ -100,7 +104,10 @@ router.beforeEach((to, from, next) => {
     next({ name: 'Login' });  // Redirect to login if not authenticated
   } else if (to.meta.requiresAdmin && userRole !== 'admin') {
     next({ name: 'Forbidden' }); // Redirect to forbidden if the user is not an admin
-  } else {
+  } else if (to.path === '/my-orders' && userRole === 'admin') {
+    next({name: 'NotFound'})
+  }
+  else {
     next();  // Allow access to the route
   }
 });
