@@ -9,6 +9,7 @@ const productRoutes = require('./routes/business/productRoutes')
 const fakeStoreRoutes = require('./routes/external_api_sampler/fakeStoreRoute')
 const dashboardRoutes = require('./routes/admin/dashboardRoutes')
 const orderRoutes = require('./routes/business/orderRoutes')
+const notFoundRoutes = require("./routes/NotFoundRoutes")
 
 
 // Initialize environment variables
@@ -30,5 +31,6 @@ app.use('/api/auth', productRoutes);
 app.use('/api/auth', fakeStoreRoutes);
 app.use("/api/auth", dashboardRoutes);
 app.use("/api/auth", orderRoutes);
+app.use("/api/auth", notFoundRoutes)
 
 module.exports = app;
