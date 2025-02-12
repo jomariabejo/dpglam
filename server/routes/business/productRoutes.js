@@ -1,7 +1,7 @@
 const express = require('express');
 const { validationResult } = require('express-validator');
-const Product = require('../models/Product');
-const { authenticateToken, isAdmin } = require('../middleware/authMiddleware'); // Import the middleware functions
+const Product = require('../../models/Product');
+const { authenticateToken, isAdmin } = require('../../middleware/authMiddleware'); // Import the middleware functions
 
 const router = express.Router();
 
@@ -85,6 +85,31 @@ router.get('/admin/products/:id', authenticateToken, isAdmin, async (req, res) =
 
 // Find product by SKU or Name (optional flexibility)
 router.get('/admin/products', authenticateToken, isAdmin, async (req, res) => {
+  const { sku, name } = req.query;
+
+  try {
+    // Build the query
+    const query = {};
+    if (sku) query.sku = sku;
+    if (name) query.name = { $regex: name, $options: 'i' };  // Case-insensitive search for name
+
+    // Find products matching the query
+    const products = await Product.find(query);
+
+    if (products.length === 0) {
+      return res.status(404).json({ error: 'No products found' });
+    }
+
+    // Respond with the found products
+    res.status(200).json({ products });
+  } catch (err) {
+    console.error(err);  // Log error for debugging
+    res.status(500).json({ error: 'Internal server error. Please try again later.' });
+  }
+});
+
+// Find product by SKU or Name (optional flexibility)
+router.get('/products', async (req, res) => {
   const { sku, name } = req.query;
 
   try {

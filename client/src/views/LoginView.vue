@@ -50,7 +50,16 @@ export default {
         // Check if a token was returned
         if (response.data.token) {
           AuthService.setToken(response.data.token) // Store token in localStorage
-          this.$router.push('/products');
+          const userRole = AuthService.getUserRole()
+
+          if(userRole === 'admin') {
+            this.$router.push("/dashboard")
+          }
+          else {
+            this.$router.push("/my-orders")
+          }
+          
+          console.log("User role is " + userRole)
         } else {
           this.errorMessage = 'Login failed: No token received';
         }
