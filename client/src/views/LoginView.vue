@@ -41,8 +41,10 @@ export default {
   },
   methods: {
     async login() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
       try {
-        const response = await axios.post('http://localhost:5000/api/auth/login', {
+        const response = await axios.post(`${API_BASE_URL}/login`, {
           email: this.email,
           password: this.password,
         });

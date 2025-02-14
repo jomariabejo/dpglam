@@ -36,7 +36,8 @@ export default {
   }
 
   try {
-    const response = await axios.get("http://localhost:5000/api/auth/admin/dashboard/stats", {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    const response = await axios.get(`${API_BASE_URL}/admin/dashboard/stats`, {
       headers: { Authorization: `Bearer ${token}` }, 
     });
     stats.value = response.data;

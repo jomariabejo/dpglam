@@ -58,7 +58,7 @@ export default {
       }
 
       try {
-        await axios.post('http://localhost:5000/api/auth/register', {
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/register`, {
           username: this.username,
           email: this.email,
           password: this.password,

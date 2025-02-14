@@ -143,7 +143,7 @@ export default {
       this.successMessage = '';
 
       try {
-        const response = await axios.put(`http://localhost:5000/api/auth/user/update`, this.form);
+        const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/user/update`, this.form);
         this.successMessage = response.data.message;
 
         // Clear form fields after success
@@ -170,7 +170,7 @@ export default {
 
       try {
         const token = AuthService.getToken();
-        await axios.delete('http://localhost:5000/api/auth/user/delete', {
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/user/delete`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

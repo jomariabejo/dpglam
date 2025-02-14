@@ -79,11 +79,11 @@ const saveUser = async () => {
     if (isEditing.value) {
       // Editing an existing user - Send update request with ID, username, and role in the URL
       await axios.put(
-        `http://localhost:5000/api/auth/user/update/${props.user._id}/${form.value.username}/${form.value.role}`
+        `${import.meta.env.VITE_API_BASE_URL}/user/update/${props.user._id}/${form.value.username}/${form.value.role}`
       );
     } else {
       // Creating a new user
-      await axios.post("http://localhost:5000/api/auth/register", form.value);
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/register`, form.value);
     }
 
     emit("user-saved"); // Notify parent to refresh users

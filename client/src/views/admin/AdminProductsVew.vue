@@ -100,7 +100,7 @@ export default {
     },
     async fetchProductsData() {
       try {
-        const response = await axios.get('http://localhost:5000/api/auth/admin/products/');
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/products/`);
         this.allProducts = response.data.products || [];
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -117,7 +117,7 @@ export default {
     async deleteProduct(productId) {
       if (confirm('Are you sure you want to delete this product?')) {
         try {
-          await axios.delete(`http://localhost:5000/api/auth/admin/products/${productId}`);
+          await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/admin/products/${productId}`);
           this.fetchProductsData();
         } catch (error) {
           console.error('Error deleting product:', error);
