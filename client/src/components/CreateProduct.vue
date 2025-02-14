@@ -91,13 +91,15 @@ export default {
 
     // Save product (create or update)
     const saveProduct = async () => {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
       try {
         if (isEditing.value) {
           // Edit existing product
-          await axios.put(`http://localhost:5000/api/auth/admin/products/${form.value._id}`, form.value);
+          await axios.put(`${API_BASE_URL}/login/admin/products/${form.value._id}`, form.value);
         } else {
           // Create new product
-          await axios.post("http://localhost:5000/api/auth/admin/products/", form.value);
+          await axios.post(`${API_BASE_URL}/admin/products/`, form.value);
         }
         emit("product-saved"); // Notify parent to refresh product list
         emit("close"); // Close modal

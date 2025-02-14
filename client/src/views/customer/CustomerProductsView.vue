@@ -24,7 +24,7 @@
     },
     async created() {
         try {
-            const response = await axios.get('http://localhost:5000/api/auth/products');
+            const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products`);
             console.log('API Response:', response.data); // Debugging line
             this.products = response.data.products || [];
         } catch (error) {

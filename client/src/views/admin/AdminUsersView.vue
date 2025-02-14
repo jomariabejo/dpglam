@@ -77,10 +77,7 @@
     methods: {
       async fetchUsersData() {
   try {
-    const response = await axios.get("http://localhost:5000/api/auth/admin/users");
-
-    console.log("Full API Response:", response); // Debugging
-    console.log("Users Array:", response.data.users); // Ensure it's an array
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/users`);
 
     if (!Array.isArray(response.data.users)) {
       console.error("API response is not an array:", response.data);
@@ -112,7 +109,7 @@
     if (confirm("Are you sure you want to delete this user?")) {
         try {
             
-            await axios.delete(`http://localhost:5000/api/auth/user/delete/${userId}`)
+            await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/user/delete/${userId}`)
 
             alert("User deleted successfully!");
             this.fetchUsersData(); // Refresh user list
