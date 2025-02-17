@@ -187,10 +187,8 @@ export default {
       } finally {
         this.isUpdating = false;
       }
-    }
-
-    ,
-
+    },
+    
     async deleteAccount() {
       this.isDeleting = true;
       this.errorMessage = '';
