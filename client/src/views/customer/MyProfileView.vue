@@ -4,6 +4,19 @@
       <h2 class="text-2xl font-semibold text-center mb-6">Update Profile</h2>
 
       <form @submit.prevent="updateProfile">
+        <div class="flex justify-center mb-4">
+          <img 
+            v-if="profileImageUrl" 
+            :src="profileImageUrl" 
+            alt="Profile Image" 
+            class="w-24 h-24 rounded-full border-2 border-gray-300 shadow-sm"
+          />
+          <input 
+            type="file" 
+            @change="handleFileUpload" 
+            class="mt-2 text-sm text-gray-600"
+          />
+      </div>
         <!-- Username -->
         <div class="mb-4">
           <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
@@ -109,6 +122,7 @@ export default {
         email: '',
         password: ''
       },
+      profileImageUrl: '',
       isUpdating: false,
       isDeleting: false, // Tracks deletion state
       errorMessage: '',
@@ -128,6 +142,7 @@ export default {
           const decodedToken = AuthService.decodeToken(token); // Assuming AuthService has this method
           this.form.username = decodedToken.username || 'N/A';
           this.form.email = decodedToken.email || 'N/A';
+          this.profileImageUrl = decodedToken.profileImageUrl || 'https://dpglam-storage-bucket.s3.ap-southeast-2.amazonaws.com/default-user-icon.jpg';
         } catch (error) {
           this.errorMessage = 'Failed to decode token';
           console.error('Error decoding token:', error);
@@ -136,33 +151,44 @@ export default {
         this.errorMessage = 'No token found';
       }
     },
-
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.profileImage = file;
+        this.profileImageUrl = URL.createObjectURL(file);
+      }
+    },
     async updateProfile() {
       this.isUpdating = true;
       this.errorMessage = '';
       this.successMessage = '';
 
+      const formData = new FormData();
+      if (this.form.username) formData.append('username', this.form.username);
+      if (this.form.email) formData.append('email', this.form.email);
+      if (this.form.password) formData.append('password', this.form.password);
+      if (this.profileImage) formData.append('profileImage', this.profileImage);
+
       try {
-        const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/user/update`, this.form);
+        const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/user/update`, formData, {
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${AuthService.getToken()}` // Add token here
+          }
+        });
+
         this.successMessage = response.data.message;
 
-        // Clear form fields after success
-        this.form.username = '';
-        this.form.email = '';
-        this.form.password = '';
-
-        // Clear messages after 3 seconds
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
-        
+        if (response.data.profileImageUrl) {
+          this.profileImageUrl = response.data.profileImageUrl;
+        }
       } catch (error) {
         this.errorMessage = error.response ? error.response.data.error : 'Something went wrong. Please try again.';
       } finally {
         this.isUpdating = false;
       }
     },
-
+    
     async deleteAccount() {
       this.isDeleting = true;
       this.errorMessage = '';

@@ -3,10 +3,17 @@ const bcrypt = require('bcryptjs');
 const User = require('../../models/User');
 const Order = require('../../models/Order');
 const Product = require('../../models/Product');
-const authenticateUser = require('../../middleware/authenticateUser');  // Assuming you have this middleware for authentication
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+const { S3Client } = require('@aws-sdk/client-s3');
+const aws = require('aws-sdk');
+const authenticateUser = require('../../middleware/authenticateUser');
 const { authenticateToken, isAdmin } = require('../../middleware/authMiddleware');
+require('dotenv').config();
 
 const router = express.Router();
+
+
 
 router.get('/admin/users', authenticateToken, isAdmin, async (req, res) => {
   try {
@@ -18,51 +25,77 @@ router.get('/admin/users', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 
-// PUT /user/update - Update user profile
-router.put('/user/update', authenticateUser, async (req, res) => {
-    const { username, email, password } = req.body;
-  
-    // Ensure at least one field is provided
-    if (!username && !email && !password) {
-      return res.status(400).json({ error: 'Username, email, or password must be provided' });
-    }
-  
-    try {
-      const user = await User.findById(req.user._id);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-  
-      // Update the user fields if provided
-      if (username) {
-        const existingUsername = await User.findOne({ username });
-        if (existingUsername && existingUsername._id.toString() !== user._id.toString()) {
-          return res.status(400).json({ error: 'Username is already in use by another user' });
-        }
-        user.username = username;
-      }
-  
-      if (email) {
-        const existingUser = await User.findOne({ email });
-        if (existingUser && existingUser._id.toString() !== user._id.toString()) {
-          return res.status(400).json({ error: 'Email is already in use by another user' });
-        }
-        user.email = email;
-      }
-  
-      if (password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        user.passwordHash = hashedPassword;  // Save the new hashed password
-      }
-  
-      await user.save();
-      res.status(200).json({ message: 'Profile updated successfully' });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Failed to update profile. Please try again later.' });
-    }
-  });
 
+// Create an S3 Client
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_ACCESS_KEY,
+  },
+});
+
+// Multer Storage for S3
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'dpglam-storage-bucket',
+    acl: 'public-read',
+    metadata: (req, file, cb) => {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: (req, file, cb) => {
+      cb(null, `profile-images/${Date.now()}_${file.originalname}`);
+    },
+  }),
+});
+
+// Update User Profile
+router.put('/user/update', authenticateUser, upload.single('profileImage'), async (req, res) => {
+  const { username, email, password } = req.body;
+  const profileImageUrl = req.file ? req.file.location : null; // Get S3 URL
+
+  if (!username && !email && !password && !profileImageUrl) {
+    return res.status(400).json({ error: 'At least one field must be updated' });
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (username) {
+      const existingUsername = await User.findOne({ username });
+      if (existingUsername && existingUsername._id.toString() !== user._id.toString()) {
+        return res.status(400).json({ error: 'Username is already in use' });
+      }
+      user.username = username;
+    }
+
+    if (email) {
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail && existingEmail._id.toString() !== user._id.toString()) {
+        return res.status(400).json({ error: 'Email is already in use' });
+      }
+      user.email = email;
+    }
+
+    if (password) {
+      user.passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    if (profileImageUrl) {
+      user.profileImageUrl = profileImageUrl;
+    }
+
+    await user.save();
+    res.status(200).json({ message: 'Profile updated successfully', profileImageUrl: user.profileImageUrl });
+  } catch (err) {
+    console.error('Error updating profile:', err);
+    res.status(500).json({ error: 'Failed to update profile. Please try again later.' });
+  }
+});
 
   router.delete('/user/delete', authenticateUser, async (req, res) => {
     try {

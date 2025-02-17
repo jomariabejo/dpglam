@@ -63,6 +63,18 @@ export const AuthService = {
       return null;
     }
   },
+  getUserProfileImage() {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.profileImageUrl || "https://dpglam-storage-bucket.s3.ap-southeast-2.amazonaws.com/default-user-icon.jpg" 
+    }
+    catch(error) {
+      console.error("Error decoding token to get user profile image:", error);
+      return null;
+    }
+  },
   decodeToken(token) {
     try {
       return jwtDecode(token);

@@ -1,9 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken'); // Import jsonwebtoken
+const jwt = require('jsonwebtoken');
 const User = require('../../models/User');
 const authenticateUser = require('../../middleware/authenticateUser');
-
+require('dotenv').config();
 const router = express.Router();
 
 // Register user
@@ -11,43 +11,58 @@ router.post('/register', async (req, res) => {
   const { username, email, password, role } = req.body;
 
   if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+    return res.status(400).json({ error: 'Email and password are required' });
   }
 
   try {
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-          return res.status(400).json({ error: 'User with this email already exists' });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User with this email already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userRole = role || 'customer';
+
+    // Default profile image from S3
+    const defaultProfileImageUrl = process.env.AWS_DEFAULT_PROFILE_IMAGE;
+
+    const user = new User({
+      username,
+      email,
+      passwordHash: hashedPassword,
+      role: userRole,
+      profileImageUrl: defaultProfileImageUrl // Set default profile image
+    });
+
+    await user.save();
+
+    // Create the JWT token
+    const token = jwt.sign(
+      { userId: user._id, username: user.username, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        profileImageUrl: user.profileImageUrl
       }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const userRole = role || 'customer';
-
-      const user = new User({
-          username,
-          email,
-          passwordHash: hashedPassword,
-          role: userRole
-      });
-
-      await user.save();
-
-      // Create the JWT token (sign using the JWT_SECRET from .env)
-      const token = jwt.sign(
-        { userId: user._id, username: user.username, email: user.email, role: user.role },
-        process.env.JWT_SECRET, // Use the secret from the .env file
-        { expiresIn: '1h' }
-      );
-
-      res.status(201).json({
-          message: 'User registered successfully',
-          token
-      });
+    });
 
   } catch (err) {
-      res.status(500).json({ error: 'Internal server error. Please try again later.' });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error. Please try again later.' });
   }
 });
+
+module.exports = router;
+
 
 
 // Login user
@@ -63,7 +78,7 @@ router.post('/login', async (req, res) => {
 
     // Create JWT token (using JWT_SECRET from .env)
     const token = jwt.sign(
-      { userId: user._id, username: user.username, email: user.email, role: user.role },
+      { userId: user._id, username: user.username, email: user.email, role: user.role , profileImageUrl: user.profileImageUrl},
       process.env.JWT_SECRET,  // This ensures you're using the secret from the .env file
       { expiresIn: '7h' }
     );

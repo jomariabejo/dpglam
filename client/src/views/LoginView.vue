@@ -47,6 +47,7 @@ export default {
         const response = await axios.post(`${API_BASE_URL}/login`, {
           email: this.email,
           password: this.password,
+          profileImageUrl: this.profileImageUrl
         });
         console.log('Login successful, response:', response);  // Check the full response
         // Check if a token was returned
