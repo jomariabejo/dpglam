@@ -41,16 +41,28 @@ export default {
   },
   methods: {
     async login() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
       try {
-        const response = await axios.post('http://localhost:5000/api/auth/login', {
+        const response = await axios.post(`${API_BASE_URL}/login`, {
           email: this.email,
           password: this.password,
+          profileImageUrl: this.profileImageUrl
         });
         console.log('Login successful, response:', response);  // Check the full response
         // Check if a token was returned
         if (response.data.token) {
           AuthService.setToken(response.data.token) // Store token in localStorage
-          this.$router.push('/products');
+          const userRole = AuthService.getUserRole()
+
+          if(userRole === 'admin') {
+            this.$router.push("/dashboard")
+          }
+          else {
+            this.$router.push("/my-orders")
+          }
+          
+          console.log("User role is " + userRole)
         } else {
           this.errorMessage = 'Login failed: No token received';
         }

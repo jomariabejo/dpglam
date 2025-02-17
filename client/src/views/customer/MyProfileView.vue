@@ -4,6 +4,19 @@
       <h2 class="text-2xl font-semibold text-center mb-6">Update Profile</h2>
 
       <form @submit.prevent="updateProfile">
+        <div class="flex justify-center mb-4">
+          <img 
+            v-if="profileImageUrl" 
+            :src="profileImageUrl" 
+            alt="Profile Image" 
+            class="w-24 h-24 rounded-full border-2 border-gray-300 shadow-sm"
+          />
+          <input 
+            type="file" 
+            @change="handleFileUpload" 
+            class="mt-2 text-sm text-gray-600"
+          />
+      </div>
         <!-- Username -->
         <div class="mb-4">
           <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
@@ -46,7 +59,7 @@
           :disabled="isUpdating" 
           class="w-full py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
         >
-          Update Profile
+          {{ isUpdating ? "Updating..." : "Update Profile" }}
         </button>
 
         <!-- Error and Success Messages -->
@@ -67,15 +80,16 @@
       </button>
 
       <!-- Confirmation Modal -->
-      <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-10">
+      <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
         <div class="bg-white p-6 rounded-lg w-96">
           <h3 class="text-xl font-semibold mb-4">Are you sure you want to delete your account?</h3>
           <div class="flex justify-between">
             <button 
               @click="deleteAccount" 
+              :disabled="isDeleting"
               class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600"
             >
-              Yes, Delete
+              {{ isDeleting ? "Deleting..." : "Yes, Delete" }}
             </button>
             <button 
               @click="showDeleteModal = false" 
@@ -108,7 +122,9 @@ export default {
         email: '',
         password: ''
       },
+      profileImageUrl: '',
       isUpdating: false,
+      isDeleting: false, // Tracks deletion state
       errorMessage: '',
       successMessage: '',
       showDeleteModal: false // Controls the visibility of the confirmation modal
@@ -126,6 +142,7 @@ export default {
           const decodedToken = AuthService.decodeToken(token); // Assuming AuthService has this method
           this.form.username = decodedToken.username || 'N/A';
           this.form.email = decodedToken.email || 'N/A';
+          this.profileImageUrl = decodedToken.profileImageUrl || 'https://dpglam-storage-bucket.s3.ap-southeast-2.amazonaws.com/default-user-icon.jpg';
         } catch (error) {
           this.errorMessage = 'Failed to decode token';
           console.error('Error decoding token:', error);
@@ -134,53 +151,74 @@ export default {
         this.errorMessage = 'No token found';
       }
     },
-
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.profileImage = file;
+        this.profileImageUrl = URL.createObjectURL(file);
+      }
+    },
     async updateProfile() {
       this.isUpdating = true;
       this.errorMessage = '';
       this.successMessage = '';
 
+      const formData = new FormData();
+      if (this.form.username) formData.append('username', this.form.username);
+      if (this.form.email) formData.append('email', this.form.email);
+      if (this.form.password) formData.append('password', this.form.password);
+      if (this.profileImage) formData.append('profileImage', this.profileImage);
+
       try {
-        const response = await axios.put(`http://localhost:5000/api/auth/user/update`, this.form);
-        console.log(this.form);
+        const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/user/update`, formData, {
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${AuthService.getToken()}` // Add token here
+          }
+        });
+
         this.successMessage = response.data.message;
-        // Clear form fields after success
-        this.form.username = '';
-        this.form.email = '';
-        this.form.password = '';
-        
+
+        if (response.data.profileImageUrl) {
+          this.profileImageUrl = response.data.profileImageUrl;
+        }
       } catch (error) {
         this.errorMessage = error.response ? error.response.data.error : 'Something went wrong. Please try again.';
       } finally {
         this.isUpdating = false;
       }
-    },
-    // Delete the account
-    async deleteAccount() {
-      const token = AuthService.getToken();
+    }
 
-      if (!token) {
-        this.errorMessage = 'No authorization token found';
-        return;
-      }
+    ,
+
+    async deleteAccount() {
+      this.isDeleting = true;
+      this.errorMessage = '';
+      this.successMessage = '';
 
       try {
-        // Ensure token is sent in the Authorization header as a Bearer token
-        await axios.delete('http://localhost:5000/api/auth/user/delete', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        const token = AuthService.getToken();
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/user/delete`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
 
-        this.successMessage = 'Your account has been successfully deleted';
-        this.$router.push('/logout'); // Redirect to login
+        this.successMessage = "Account successfully deleted. Redirecting to login...";
+        
+        // Clear token and log out
+        AuthService.logout();
+
+        // Redirect after 3 seconds
+        setTimeout(() => {
+          this.$router.push('/login');
+        }, 3000);
+
       } catch (error) {
-        console.log(error)
-        this.errorMessage = error.response ? error.response.data.error : 'Failed to delete account. Please try again.';
+        this.errorMessage = error.response ? error.response.data.error : 'Failed to delete account';
       } finally {
+        this.isDeleting = false;
         this.showDeleteModal = false;
       }
-  }
+    }
   }
 };
 </script>

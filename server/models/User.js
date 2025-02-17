@@ -10,7 +10,8 @@ const userSchema = new mongoose.Schema({
     type: String, 
     enum: ['customer', 'admin'], // Only allows 'customer' or 'admin' as values
     default: 'customer'          // Default role is 'customer'
-  }
+  },
+  profileImageUrl: { type: String }
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

@@ -1,24 +1,15 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router';
 
 </script>
 
-<template>
-    <div class="about">
-      <h1>This is an Products page</h1>
-      <RouterLink to="/logout">
-        Logout
-      </RouterLink>
+  <template>
+    <div class="flex h-screen">
+      <main class="w-3/4 p-6 bg-gray-100">
+        <RouterView />
+      </main>
     </div>
   </template>
-  
   <style>
-  @media (min-width: 1024px) {
-    .about {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-    }
-  }
+
   </style>
   

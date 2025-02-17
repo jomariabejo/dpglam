@@ -15,10 +15,28 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
   },
   {
+    path: '/admin/users',
+    name: 'AdminUsersView',
+    component: () => import('../views/admin/AdminUsersView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
+  },
+  {
+    path: '/admin/orders',
+    name: 'AdminOrdersView',
+    component: () => import('../views/admin/AdminOrdersView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
+  },
+  {
+    path: '/admin/fakestore',
+    name: 'AdminProductsView',
+    component: () => import('../views/admin/AdminProductsVew.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
+  },
+  {
     path: '/about',
     name: 'About',
     component: () => import('../views/AboutView.vue'),
-    meta: { requiresAuth: true }, // Protect this route
+    meta: { requiresAuth: true }, 
   },
   {
     path: '/login',
@@ -58,7 +76,23 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }, // Only allow admins to access
   },
 
-  
+// CUSTOMER ROUTER
+  {
+    path: '/public/products',
+    name: 'CustomerProductsView',
+    component: () => import('../views/customer/CustomerProductsView.vue'),
+  },
+  {
+    path: '/my-orders',
+    name: 'CustomerOrdersView',
+    component: () => import('../views/customer/MyOrdersView.vue'),
+    meta: { requiresAuth: true}
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFoundView.vue'),
+  }  
 ];
 
 // Create the router
@@ -76,7 +110,10 @@ router.beforeEach((to, from, next) => {
     next({ name: 'Login' });  // Redirect to login if not authenticated
   } else if (to.meta.requiresAdmin && userRole !== 'admin') {
     next({ name: 'Forbidden' }); // Redirect to forbidden if the user is not an admin
-  } else {
+  } else if (to.path === '/my-orders' && userRole === 'admin') {
+    next({name: 'NotFound'})
+  }
+  else {
     next();  // Allow access to the route
   }
 });

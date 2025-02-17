@@ -6,7 +6,6 @@ export const AuthService = {
   },
   setToken(token) {
     localStorage.setItem('auth_token', token);
-    console.log("THE SERVER TOKEN IS : " + token)
   },
   removeToken() {
     localStorage.removeItem('auth_token');
@@ -39,6 +38,9 @@ export const AuthService = {
       return null;
     }
   },
+  isAdmin() {
+    return this.getUserRole() === 'admin'; // Check if the role is 'admin'
+  },
   getUserEmail() {
     const token = this.getToken();
     if (!token) return null;
@@ -58,6 +60,18 @@ export const AuthService = {
       return decoded.username || null; // Assuming the username is inside the token payload
     } catch (error) {
       console.error("Error decoding token to get username:", error);
+      return null;
+    }
+  },
+  getUserProfileImage() {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.profileImageUrl || "https://dpglam-storage-bucket.s3.ap-southeast-2.amazonaws.com/default-user-icon.jpg" 
+    }
+    catch(error) {
+      console.error("Error decoding token to get user profile image:", error);
       return null;
     }
   },
