@@ -174,3 +174,43 @@ router.delete('/admin/products/:id', authenticateToken, isAdmin, async (req, res
 });
 
 module.exports = router;
+
+
+// Bulk Insert Products
+router.post('/admin/products/bulk', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { products } = req.body;
+
+    // Check if products is an array and not empty
+    if (!Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ error: "Products should be an array and cannot be empty" });
+    }
+
+    // Validate each product
+    for (const product of products) {
+      const { name, description, price, stockQuantity, category, sku, image } = product;
+      
+      if (!name || !description || !price || !stockQuantity || !category || !sku || !image) {
+        return res.status(400).json({ error: `All fields are required for product: ${name || "Unnamed Product"}` });
+      }
+
+      // Check if a product with the same name already exists
+      const existingProduct = await Product.findOne({ name });
+      if (existingProduct) {
+        return res.status(409).json({ error: `Product with the name "${name}" already exists` });
+      }
+    }
+
+    // Insert all products into the database
+    const insertedProducts = await Product.insertMany(products);
+
+    res.status(201).json({
+      message: "Products added successfully!",
+      products: insertedProducts
+    });
+
+  } catch (error) {
+    console.error("Bulk insert error:", error);
+    res.status(500).json({ error: "Internal server error. Please try again later." });
+  }
+});
