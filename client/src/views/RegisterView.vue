@@ -1,40 +1,52 @@
 <template>
-  <div class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="w-full max-w-md p-8 bg-white border border-gray-300 rounded-lg shadow-lg">
-      <h2 class="text-2xl font-semibold text-center mb-6">Register</h2>
-      <form @submit.prevent="register">
-        <div class="mb-4">
-          <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-          <input type="text" id="username" v-model="username" required 
-                 class="mt-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div class="mb-4">
-          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" id="email" v-model="email" required 
-                 class="mt-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div class="mb-4">
-          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-          <input type="password" id="password" v-model="password" required 
-                 class="mt-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div class="mb-6">
-          <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-          <input type="password" id="confirmPassword" v-model="confirmPassword" required 
-                 class="mt-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <button type="submit" 
-                class="w-full py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">
-          Register
-        </button>
-      </form>
-      <p v-if="errorMessage" class="text-red-500 text-center mt-4">{{ errorMessage }}</p>
-      <p class="text-center mt-4 text-sm">
-        Already have an account? 
-        <router-link to="/login" class="text-blue-500 hover:text-blue-700">Login here</router-link>
-      </p>
-    </div>
-  </div>
+  <v-container class="d-flex flex-column align-center justify-center fill-height">
+    <v-card class="pa-8" max-width="400" elevation="10">
+      <v-card-title class="text-h5 text-center">Register</v-card-title>
+      <v-card-text>
+        <v-form @submit.prevent="register">
+          <v-text-field 
+            v-model="username" 
+            label="Username" 
+            required 
+            outlined 
+            dense
+          ></v-text-field>
+          <v-text-field 
+            v-model="email" 
+            label="Email" 
+            type="email" 
+            required 
+            outlined 
+            dense
+          ></v-text-field>
+          <v-text-field 
+            v-model="password" 
+            label="Password" 
+            type="password" 
+            required 
+            outlined 
+            dense
+          ></v-text-field>
+          <v-text-field 
+            v-model="confirmPassword" 
+            label="Confirm Password" 
+            type="password" 
+            required 
+            outlined 
+            dense
+          ></v-text-field>
+          <v-btn type="submit" color="green" block class="mt-4">Register</v-btn>
+        </v-form>
+        <v-alert v-if="errorMessage" type="error" class="mt-4">
+          {{ errorMessage }}
+        </v-alert>
+        <p class="text-center mt-4 text-body-2">
+          Already have an account? 
+          <router-link to="/login" class="text-decoration-none text-blue">Login here</router-link>
+        </p>
+      </v-card-text>
+    </v-card>
+  </v-container>
 </template>
 
 <script>
@@ -75,5 +87,5 @@ export default {
 </script>
 
 <style scoped>
-/* No additional custom styles are needed since Tailwind CSS covers the design */
+
 </style>

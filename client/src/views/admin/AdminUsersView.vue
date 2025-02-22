@@ -1,129 +1,144 @@
 <template>
-    <div class="p-6">
-      <h1 class="text-3xl font-bold text-gray-900">Admin Users</h1>
-      <p class="mt-4 text-gray-600">Manage registered users.</p>
-  
-      <button 
-        @click="openCreateModal"
-        class="mt-4 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-      >
-        Create User
-      </button> 
-  
-      <button 
-        @click="fetchUsersData"
-        class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-      >
-        Load Users
-      </button>
-  
-      <!-- Show Create User Form -->
-      <CreateUser 
-        v-if="showCreateForm" 
-        :user="selectedUser" 
-        @close="showCreateForm = false" 
-        @user-saved="fetchUsersData" 
-      />
-  
-      <!-- Users Table -->
-      <div class="mt-6 overflow-x-auto">
-        <table class="min-w-full bg-white border border-gray-200 rounded-lg">
-          <thead class="bg-gray-200">
-            <tr>
-              <th class="px-4 py-2 border">Username</th>
-              <th class="px-4 py-2 border">Email</th>
-              <th class="px-4 py-2 border">Role</th>
-              <th class="px-4 py-2 border">Created At</th>
-              <th class="px-4 py-2 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in allUsers" :key="user._id">
-              <td class="px-4 py-2 border">{{ user.username }}</td>
-              <td class="px-4 py-2 border">{{ user.email }}</td>
-              <td class="px-4 py-2 border">{{ user.role }}</td>
-              <td class="px-4 py-2 border">{{ new Date(user.createdAt).toLocaleDateString() }}</td>
-              <td class="px-4 py-2 border flex space-x-2 justify-center">
-                <button @click="openEditModal(user)" class="text-blue-600 hover:text-blue-800">
-                  ✏️
-                </button>
-                <button @click="deleteUser(user._id)" class="text-red-600 hover:text-red-800">
-                  🗑️
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  import CreateUser from '@/components/CreateUser.vue';
-  
-  export default {
-    name: 'AdminUsersView',
-    components: {
-      CreateUser
-    },
-    data() {
-      return {
-        allUsers: [],
-        showCreateForm: false,
-        selectedUser: null
-      };
-    },
-    methods: {
-      async fetchUsersData() {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/users`);
+  <v-container>
+    <h1 class="text-h4 font-weight-bold">Admin Users</h1>
+    <p class="text-body-2 mb-4">Manage registered users.</p>
 
-    if (!Array.isArray(response.data.users)) {
-      console.error("API response is not an array:", response.data);
-      return;
-    }
+    <!-- Buttons for Create and Refresh -->
+    <v-btn color="green-darken-2" class="mr-2" @click="openCreateModal">
+      <v-icon left>mdi-account-plus</v-icon> Create User
+    </v-btn>
+    <v-btn color="blue-darken-2" @click="fetchUsersData">
+      <v-icon left>mdi-refresh</v-icon> Load Users
+    </v-btn>
 
-    this.allUsers = response.data.users; // 
-  } catch (error) {
-    console.error("Error fetching users:", error);
-  }
-}
+    <!-- Users Table -->
+    <v-table class="mt-6">
+      <thead>
+        <tr>
+          <th class="text-left">Username</th>
+          <th class="text-left">Email</th>
+          <th class="text-left">Role</th>
+          <th class="text-left">Created At</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user in allUsers" :key="user._id">
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>{{ new Date(user.createdAt).toLocaleDateString() }}</td>
+          <td class="text-center">
+            <v-btn icon color="blue" density="compact" @click="openEditModal(user)">
+              <v-icon size="22">mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn icon color="red" density="compact" @click="deleteUser(user._id)">
+              <v-icon size="22">mdi-delete</v-icon>
+            </v-btn>
+          </td>
+        </tr>
+      </tbody>
+    </v-table>
 
+    <!-- Create/Edit User Modal (Now Integrated) -->
+    <v-dialog v-model="showCreateForm" max-width="500px" @update:modelValue="handleClose">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">{{ selectedUser ? 'Edit User' : 'Create User' }}</span>
+        </v-card-title>
+        <v-card-text>
+          <v-form ref="userForm">
+            <v-text-field v-model="userData.username" label="Username" required></v-text-field>
+            <v-text-field v-model="userData.email" label="Email" type="email" required></v-text-field>
+            <v-select v-model="userData.role" label="Role" :items="['admin', 'customer']"></v-select>
+            <v-text-field v-model="userData.password" label="Password" type="password" required></v-text-field>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="red" @click="handleClose">Cancel</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="green" @click="saveUser">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
-,
+  </v-container>
+</template>
 
-  
+<script>
+import axios from 'axios';
 
-  openCreateModal() {
-    this.selectedUser = null;
-    this.showCreateForm = true;
+export default {
+  name: 'AdminUsersView',
+  data() {
+    return {
+      allUsers: [],
+      showCreateForm: false,
+      selectedUser: null,
+      userData: {
+        username: '',
+        email: '',
+        role: 'customer',
+        password: ''
+      }
+    };
   },
-
-  openEditModal(user) {
-    this.selectedUser = { ...user };
-    this.showCreateForm = true;
-  },
-
-  async deleteUser(userId) {
-    if (confirm("Are you sure you want to delete this user?")) {
-        try {
-            
-            await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/user/delete/${userId}`)
-
-            alert("User deleted successfully!");
-            this.fetchUsersData(); // Refresh user list
-        } catch (error) {
-            console.error("Error deleting user:", error.response ? error.response.data : error);
-            alert("Failed to delete user. Check console for details.");
+  methods: {
+    async fetchUsersData() {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/users`);
+        this.allUsers = Array.isArray(response.data.users) ? response.data.users : [];
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    },
+    openCreateModal() {
+      this.selectedUser = null;
+      this.resetUserData();
+      this.showCreateForm = true;
+    },
+    openEditModal(user) {
+      this.selectedUser = { ...user };
+      this.userData = { ...user };
+      this.showCreateForm = true;
+    },
+    async saveUser() {
+      try {
+        if (this.selectedUser?._id) {
+          const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/user/update/${this.selectedUser._id}/${encodeURIComponent(this.userData.username)}/${this.userData.role}`;
+          await axios.put(apiUrl);
+        } else {
+          await axios.post(`${import.meta.env.VITE_API_BASE_URL}/`, this.userData);
         }
-    }
-}
-
+        this.fetchUsersData();
+        this.handleClose();
+      } catch (error) {
+        console.error("Error saving user:", error.response?.data || error);
+        alert("Failed to save user.");
+      }
     },
-    mounted() {
-      this.fetchUsersData();
+    async deleteUser(userId) {
+      if (confirm("Are you sure you want to delete this user?")) {
+        try {
+          await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/user/delete/${userId}`);
+          alert("User deleted successfully!");
+          this.fetchUsersData();
+        } catch (error) {
+          console.error("Error deleting user:", error.response?.data || error);
+          alert("Failed to delete user.");
+        }
+      }
+    },
+    handleClose() {
+      this.showCreateForm = false;
+      this.resetUserData();
+    },
+    resetUserData() {
+      this.userData = { username: '', email: '', role: 'customer', password: '' };
     }
-  };
-  </script>
-  
+  },
+  mounted() {
+    this.fetchUsersData();
+  }
+};
+</script>

@@ -2,23 +2,38 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { AuthService } from '../src/services/auth' // Import your AuthService
+import { AuthService } from '../src/services/auth'
 import AdminNavigationBarView from './views/admin/AdminNavigationView.vue'
 import CustomerNavigationBarView from './views/customer/CustomerNavigationView.vue'
 
-const isLoggedIn = ref(false) // Tracks login status
-const isAdmin = ref(false) // Tracks admin status
+const isLoggedIn = ref(false)
+const isAdmin = ref(false)
 const route = useRoute()
 const router = useRouter()
 
 // Function to check authentication and role
-const checkAuth = () => {
-  const token = AuthService.getToken() // Retrieve token from localStorage
-  isLoggedIn.value = !!token // Convert token existence to boolean
+const checkAuth = async () => {
+  const token = AuthService.getToken()
+  isLoggedIn.value = !!token
 
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}` // Set authorization header
-    isAdmin.value = AuthService.isAdmin() // Check if user is admin
+  if (isLoggedIn.value) {
+    try {
+      // Optional: Validate token with backend before using it
+      await axios.get('/api/validate-token', { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      isAdmin.value = AuthService.isAdmin()
+    } catch (error) {
+      console.warn("Invalid or expired token, logging out.")
+      AuthService.logout()
+      isLoggedIn.value = false
+      isAdmin.value = false
+      console.log(error)
+    }
+  } else {
+    isAdmin.value = false
   }
 }
 
@@ -26,27 +41,31 @@ const checkAuth = () => {
 onMounted(() => {
   checkAuth()
 
-  // Redirect logged-in users away from login page
   if (route.path === '/login' && isLoggedIn.value) {
     router.push('/')
   }
 })
 
-// Watch for route changes to re-evaluate authentication
+// Watch for route changes
 watch(route, () => {
   checkAuth()
 })
 </script>
 
 <template>
-  <!-- Show Admin Navigation if the user is an admin -->
-  <AdminNavigationBarView v-if="isLoggedIn && isAdmin && route.path !== '/login'" />
+  <v-app>
+    <!-- Admin Navigation -->
+    <AdminNavigationBarView v-if="isLoggedIn && isAdmin && route.path !== '/login'" />
 
-  <!-- Show Customer Navigation if the user is not an admin -->
-  <CustomerNavigationBarView v-if="isLoggedIn && !isAdmin && route.path !== '/login'" />
+    <!-- Customer Navigation -->
+    <CustomerNavigationBarView v-if="isLoggedIn && !isAdmin && route.path !== '/login'" />
 
-  <RouterView />
+    <v-main>
+      <RouterView />
+    </v-main>
+  </v-app>
 </template>
 
 <style scoped>
+/* No additional styling needed since Vuetify handles layout */
 </style>

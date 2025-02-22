@@ -1,21 +1,37 @@
 <template>
-    <nav class="flex flex-row justify-between items-center p-4 shadow-lg">
-        <div class="flex justify-center items-center mx-auto">
-            <div class="hidden md:flex space-x-6">
-                <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/dashboard">Dashboard</RouterLink>
-                <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/admin/orders">Orders</RouterLink>
-                <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/admin/fakestore">Products</RouterLink>
-                <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/admin/users">Users</RouterLink>
-                <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/myprofile">My Profile</RouterLink>
-                <RouterLink class="text-white rounded-full bg-green-800 px-5 py-2 hover:bg-green-800 hover:text-white transition duration-200" to="/logout">Logout</RouterLink>
-            </div>
-        </div>
-    </nav>
-</template>
-    
-<script setup lang="ts">
-import { RouterLink } from 'vue-router';
-
-</script>
-    
-<style></style>
+    <!-- App Bar (Top Navbar) -->
+    <v-app-bar app color="green-darken-4" dark>
+      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title>DP Glam</v-toolbar-title>
+    </v-app-bar>
+  
+    <!-- Sidebar (Navigation Drawer) -->
+    <v-navigation-drawer v-model="drawer" app color="grey-lighten-3">
+      <v-list>
+        <v-list-item to="/" prepend-icon="mdi-home" title="Home"></v-list-item>
+        <v-list-item to="/admin/users" prepend-icon="mdi-home" title="Users"></v-list-item>
+        <v-list-item to="/admin/orders" prepend-icon="mdi-home" title="Orders"></v-list-item>
+        <v-list-item to="/admin/fakestore" prepend-icon="mdi-home" title="Fakestore"></v-list-item>
+        <v-list-item to="/dashboard" prepend-icon="mdi-view-dashboard" title="Dashboard"></v-list-item>
+        <v-list-item to="/settings" prepend-icon="mdi-cog" title="Settings"></v-list-item>
+        <v-list-item to="/logout" prepend-icon="mdi-logout" title="Logout"></v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+  </template>
+  
+  <script>
+  export default {
+    data() {
+      return {
+        drawer: true, // Controls the sidebar state
+      }
+    }
+  }
+  </script>
+  
+  <style scoped>
+  .v-main {
+    min-height: 100vh;
+  }
+  </style>
+  

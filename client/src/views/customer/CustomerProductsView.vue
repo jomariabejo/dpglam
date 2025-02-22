@@ -1,6 +1,6 @@
 <template>
     <div class="min-h-screen bg-gray-100 p-6">
-      <h2 class="text-2xl font-semibold text-center mb-6">Available Products</h2>
+      <h2 class="text-2xl font-semibold text-center mb-6">Available Products : {{ products.length }}</h2>
       <div v-if="loading" class="text-center text-gray-500">Loading products...</div>
       <div v-else-if="errorMessage" class="text-center text-red-500">{{ errorMessage }}</div>
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

@@ -47,7 +47,6 @@ router.post('/admin/products', authenticateToken, isAdmin, async (req, res) => {
       sku,
       image
     });
-
     // Save product to the database
     await newProduct.save();
 
@@ -132,6 +131,12 @@ router.get('/products', async (req, res) => {
     res.status(500).json({ error: 'Internal server error. Please try again later.' });
   }
 });
+
+// Count all products
+router.get('/product/count', async (req, res) => {
+  const totalOrders = await Order.countDocuments();
+  return totalOrders;
+})
 
 // Update product by ID
 router.put('/admin/products/:id', authenticateToken, isAdmin, async (req, res) => {

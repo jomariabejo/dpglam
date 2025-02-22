@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
 export const AuthService = {
@@ -9,6 +10,8 @@ export const AuthService = {
   },
   removeToken() {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('role')
+    delete axios.defaults.headers.common['Authorization']
   },
   isAuthenticated() {
     const token = this.getToken();
