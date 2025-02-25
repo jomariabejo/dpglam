@@ -44,6 +44,11 @@ const routes = [
     component: () => import('../views/LoginView.vue'),
   },
   {
+    path: "/google-auth-success",
+    name: "GoogleAuthSuccess",
+    component: () => import("@/views/GoogleAuthSuccess.vue"),
+  },  
+  {
     path: '/register',
     name: 'Register',
     component: () => import('../views/RegisterView.vue'),

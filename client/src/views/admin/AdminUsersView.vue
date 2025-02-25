@@ -4,13 +4,18 @@
     <p class="text-body-2 mb-4">Manage registered users.</p>
 
     <!-- Buttons for Create and Refresh -->
-    <v-btn color="green-darken-2" class="mr-2" @click="openCreateModal">
-      <v-icon left>mdi-account-plus</v-icon> Create User
-    </v-btn>
-    <v-btn color="blue-darken-2" @click="fetchUsersData">
-      <v-icon left>mdi-refresh</v-icon> Load Users
-    </v-btn>
-
+    <v-row class="mb-4">
+      <v-col cols="12" sm="4" md="3">
+        <v-btn block color="green-darken-2" @click="openCreateModal">
+          <v-icon left>mdi-account-plus</v-icon> Create User
+        </v-btn>
+      </v-col>
+      <v-col cols="12" sm="4" md="3">
+        <v-btn block color="blue-darken-2" @click="fetchUsersData">
+          <v-icon left>mdi-account-plus</v-icon> Load Users
+        </v-btn>
+      </v-col>
+    </v-row>
     <!-- Users Table -->
     <v-table class="mt-6">
       <thead>
