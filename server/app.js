@@ -3,7 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const fetch = require('node-fetch'); // Ensure you have this installed
+const helmet = require('helmet')
 
 const authRoutes = require('./routes/security/authRoutes');
 const userRoutes = require('./routes/business/userRoutes');
@@ -18,6 +18,13 @@ const User = require("./models/User"); // Import User Model
 dotenv.config();
 
 const app = express();
+app.use(helmet(
+    {
+        contentSecurityPolicy: false, // Disables CSP for development purposes.
+        xssFilter: true, // Activates XSS filtering.
+        noSniff: true, // Prevents MIME type sniffing.
+    }
+))
 app.use(cors());
 app.use(express.json());
 
