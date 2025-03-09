@@ -153,7 +153,22 @@ export default {
     },
     handleFileUpload(event) {
       const file = event.target.files[0];
+
       if (file) {
+        const fileSizeMB = file.size / (1024 * 1024); // Convert bytes to MB
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+
+        if (!allowedTypes.includes(file.type)) {
+          this.errorMessage = "Only JPEG, JPG, and PNG formats are allowed.";
+          return;
+        }
+
+        if (fileSizeMB > 25) {
+          this.errorMessage = "File size must be at least 25MB.";
+          return;
+        }
+
+        this.errorMessage = "";
         this.profileImage = file;
         this.profileImageUrl = URL.createObjectURL(file);
       }

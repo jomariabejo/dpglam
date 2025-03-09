@@ -96,7 +96,7 @@ export default {
       try {
         if (isEditing.value) {
           // Edit existing product
-          await axios.put(`${API_BASE_URL}/login/admin/products/${form.value._id}`, form.value);
+          await axios.put(`${API_BASE_URL}/admin/products/${form.value._id}`, form.value);
         } else {
           // Create new product
           await axios.post(`${API_BASE_URL}/admin/products/`, form.value);

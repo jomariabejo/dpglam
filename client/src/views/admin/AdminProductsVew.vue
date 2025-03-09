@@ -1,76 +1,74 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-3xl font-bold text-gray-900">Admin Products</h1>
-    <p class="mt-4 text-gray-600">Manage your products and fetch sample data from FakeStoreAPI.</p>
+  <v-container>
+    <!-- Page Header -->
+    <v-row align="center" justify="space-between" class="mb-4">
+      <v-col cols="12" sm="6">
+        <h1 class="text-h4 font-weight-bold">Admin Products</h1>
+        <p class="text-body-2">Manage your products and fetch sample data from FakeStoreAPI.</p>
+      </v-col>
+    </v-row>
 
-    <button 
-      @click="openCreateModal"
-      class="mt-4 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-    >
-      Create Product Data
-    </button> 
-
-    <button 
-      @click="fetchProductsData"
-      class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-    >
-      Load Products Data
-    </button> 
-
-    <button 
-      @click="fetchFakeStoreData"
-      class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-    >
-      Load Fake Store Data
-    </button>
-
-    <!-- Show Create Product Form -->
-    <CreateProduct 
-      v-if="showCreateForm" 
-      :product="selectedProduct" 
-      @close="showCreateForm = false" 
-      @product-saved="fetchProductsData" 
-    />
+    <!-- Action Buttons -->
+    <v-row class="mb-4">
+      <v-col cols="12" sm="4" md="3">
+        <v-btn block color="green-darken-2" @click="openCreateModal">
+          <v-icon left>mdi-plus</v-icon> Create Product
+        </v-btn>
+      </v-col>
+      <v-col cols="12" sm="4" md="3">
+        <v-btn block color="blue-darken-2" @click="fetchProductsData">
+          <v-icon left>mdi-refresh</v-icon> Load Products
+        </v-btn>
+      </v-col>
+      <v-col cols="12" sm="4" md="3">
+        <v-btn block color="blue-darken-2" @click="fetchFakeStoreData">
+          <v-icon left>mdi-database</v-icon> Load Fake Store Data
+        </v-btn>
+      </v-col>
+    </v-row>
 
     <!-- Products Table -->
-    <div class="mt-6 overflow-x-auto">
-      <table class="min-w-full bg-white border border-gray-200 rounded-lg">
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="px-4 py-2 border">Name</th>
-            <th class="px-4 py-2 border">Description</th>
-            <th class="px-4 py-2 border">Price</th>
-            <th class="px-4 py-2 border">Stock</th>
-            <th class="px-4 py-2 border">Category</th>
-            <th class="px-4 py-2 border">SKU</th>
-            <th class="px-4 py-2 border">Image</th>
-            <th class="px-4 py-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="product in allProducts" :key="product.sku || product.id">
-            <td class="px-4 py-2 border">{{ product.name || product.title }}</td>
-            <td class="px-4 py-2 border">{{ product.description }}</td>
-            <td class="px-4 py-2 border">${{ product.price }}</td>
-            <td class="px-4 py-2 border">{{ product.stockQuantity || 'N/A' }}</td>
-            <td class="px-4 py-2 border">{{ product.category }}</td>
-            <td class="px-4 py-2 border">{{ product.sku || 'N/A' }}</td>
-            <td class="px-4 py-2 border">
-              <img :src="product.image" alt="Product Image" class="h-12 w-12 object-cover rounded-md">
-            </td>
-            <td class="px-4 py-2 border flex space-x-2 justify-center">
-              <button @click="openEditModal(product)" class="text-blue-600 hover:text-blue-800">
-                ✏️
-              </button>
-              <button @click="deleteProduct(product._id)" class="text-red-600 hover:text-red-800">
-                🗑️
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <v-table class="mt-4 elevation-2">
+      <thead class="bg-grey-lighten-3">
+        <tr>
+          <th class="text-left">Name</th>
+          <th class="text-left">Description</th>
+          <th class="text-left">Price</th>
+          <th class="text-left">Stock</th>
+          <th class="text-left">Category</th>
+          <th class="text-left">SKU</th>
+          <th class="text-left">Image</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="product in allProducts" :key="product.sku || product.id">
+          <td>{{ product.name || product.title }}</td>
+          <td class="truncate-text">{{ product.description }}</td>
+          <td>${{ product.price }}</td>
+          <td>{{ product.stockQuantity || 'N/A' }}</td>
+          <td>{{ product.category }}</td>
+          <td>{{ product.sku || 'N/A' }}</td>
+          <td>
+            <v-img :src="product.image" alt="Product Image" max-width="50" max-height="50" class="rounded"></v-img>
+          </td>
+          <td class="text-center">
+            <v-btn icon color="blue" density="compact" @click="openEditModal(product)">
+              <v-icon size="22">mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn icon color="red" density="compact" @click="deleteProduct(product._id)">
+              <v-icon size="22">mdi-delete</v-icon>
+            </v-btn>
+          </td>
+        </tr>
+      </tbody>
+    </v-table>
+
+    <!-- Create/Edit Product Modal -->
+    <v-dialog v-model="showCreateForm" max-width="500px" @update:modelValue="handleClose">
+      <CreateProduct :product="selectedProduct" @close="handleClose" @product-saved="fetchProductsData" />
+    </v-dialog>
+  </v-container>
 </template>
 
 <script>
@@ -79,9 +77,7 @@ import CreateProduct from '@/components/CreateProduct.vue';
 
 export default {
   name: 'AdminProductsView',
-  components: {
-    CreateProduct
-  },
+  components: { CreateProduct },
   data() {
     return {
       allProducts: [],
@@ -107,11 +103,11 @@ export default {
       }
     },
     openCreateModal() {
-      this.selectedProduct = null; // Reset for new product creation
+      this.selectedProduct = null;
       this.showCreateForm = true;
     },
     openEditModal(product) {
-      this.selectedProduct = { ...product }; // Clone product for editing
+      this.selectedProduct = { ...product };
       this.showCreateForm = true;
     },
     async deleteProduct(productId) {
@@ -123,6 +119,9 @@ export default {
           console.error('Error deleting product:', error);
         }
       }
+    },
+    handleClose() {
+      this.showCreateForm = false;
     }
   },
   mounted() {
