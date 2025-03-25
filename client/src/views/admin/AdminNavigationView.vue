@@ -8,8 +8,8 @@
     <!-- Sidebar (Navigation Drawer) -->
     <v-navigation-drawer v-model="drawer" app color="grey-lighten-3">
       <v-list>
-        <v-list-item to="/" prepend-icon="mdi-home" title="Home"></v-list-item>
         <v-list-item to="/admin/users" prepend-icon="mdi-home" title="Users"></v-list-item>
+        <v-list-item to="/admin/transactions" prepend-icon="mdi-cash-multiple" title="Transactions"></v-list-item>
         <v-list-item to="/admin/orders" prepend-icon="mdi-home" title="Orders"></v-list-item>
         <v-list-item to="/admin/fakestore" prepend-icon="mdi-home" title="Fakestore"></v-list-item>
         <v-list-item to="/dashboard" prepend-icon="mdi-view-dashboard" title="Dashboard"></v-list-item>

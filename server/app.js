@@ -12,6 +12,7 @@ const fakeStoreRoutes = require('./routes/external_api_sampler/fakeStoreRoute');
 const dashboardRoutes = require('./routes/admin/dashboardRoutes');
 const orderRoutes = require('./routes/business/orderRoutes');
 const notFoundRoutes = require("./routes/NotFoundRoutes");
+const transactionRoutes = require("./routes/admin/transactionRoutes")
 const User = require("./models/User"); // Import User Model
 
 // Initialize environment variables
@@ -41,6 +42,7 @@ app.use('/api/auth', fakeStoreRoutes);
 app.use("/api/auth", dashboardRoutes);
 app.use("/api/auth", orderRoutes);
 app.use("/api/auth", notFoundRoutes);
+app.use("/api/auth", transactionRoutes);
 
 // OAuth Setup
 const GOOGLE_OAUTH_URL = process.env.GOOGLE_OAUTH_URL;
