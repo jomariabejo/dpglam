@@ -15,7 +15,7 @@
             <v-icon left>mdi-refresh</v-icon> Load Today's Transactions
           </v-btn>
         </v-col>
-        <v-col cols="12" sm="4" md="3">
+        <!-- <v-col cols="12" sm="4" md="3">
             <v-menu v-model="datePicker" transition="scale-transition">
                 <template v-slot:activator="{ props }">
                 <v-btn v-bind="props" block color="blue-darken-2">
@@ -28,7 +28,7 @@
                 @update:modelValue="handleDateChange"
                 ></v-date-picker>
             </v-menu>
-        </v-col>
+        </v-col> -->
         <v-col cols="12" sm="4" md="3">
             <v-btn block color="green-darken-2" @click="openAddModal">
             <v-icon left>mdi-plus</v-icon> Add New Transaction

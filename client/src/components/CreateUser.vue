@@ -63,9 +63,9 @@ export default {
     async saveUser() {
       try {
         if (this.user?._id) {
-          await axios.put(`${import.meta.env.VITE_API_BASE_URL}/admin/users/${this.user._id}`, this.userData);
+          await axios.put(`${import.meta.env.VITE_API_BASE_URL}admin/users/${this.user._id}`, this.userData);
         } else {
-          await axios.post(`${import.meta.env.VITE_API_BASE_URL}/admin/users`, this.userData);
+          await axios.post(`${import.meta.env.VITE_API_BASE_URL}admin/users`, this.userData);
         }
         this.$emit('user-saved');
         this.$emit('close');

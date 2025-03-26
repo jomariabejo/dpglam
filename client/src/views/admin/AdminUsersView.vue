@@ -108,20 +108,25 @@ export default {
       this.showCreateForm = true;
     },
     async saveUser() {
-      try {
-        if (this.selectedUser?._id) {
-          const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/user/update/${this.selectedUser._id}/${encodeURIComponent(this.userData.username)}/${this.userData.role}`;
-          await axios.put(apiUrl);
-        } else {
-          await axios.post(`${import.meta.env.VITE_API_BASE_URL}/`, this.userData);
-        }
-        this.fetchUsersData();
-        this.handleClose();
-      } catch (error) {
-        console.error("Error saving user:", error.response?.data || error);
-        alert("Failed to save user.");
-      }
-    },
+  try {
+    if (this.selectedUser?._id) {
+      // Update User (Exclude password if not changed)
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/user/update/${this.selectedUser._id}`;
+      await axios.put(apiUrl, {
+        username: this.userData.username,
+        role: this.userData.role
+      });
+    } else {
+      // Create New User (Include password)
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/user/create`, this.userData);
+    }
+    this.fetchUsersData();
+    this.handleClose();
+  } catch (error) {
+    console.error("Error saving user:", error.response?.data || error);
+    alert(error.response?.data?.error || "Failed to save user.");
+  }
+},
     async deleteUser(userId) {
       if (confirm("Are you sure you want to delete this user?")) {
         try {

@@ -21,7 +21,7 @@ router.post('/register', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const userRole = role || 'customer';
+    const userRole = 'customer';
 
     // Default profile image from S3
     const defaultProfileImageUrl = process.env.AWS_DEFAULT_PROFILE_IMAGE;

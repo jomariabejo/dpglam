@@ -50,6 +50,58 @@ const upload = multer({
   }),
 });
 
+// Create User Profile via using admin user account
+router.post('/user/create', authenticateToken, isAdmin, async (req, res) => {
+  const { username, email, password, role } = req.body;
+
+  try {
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    // Check if email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already in use' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Set user role
+    const userRole = role || 'customer'; // Default to 'customer' if no role provided
+
+    // Default profile image from environment variable
+    const defaultProfileImageUrl = process.env.AWS_DEFAULT_PROFILE_IMAGE || '';
+
+    // Create new user
+    const user = new User({
+      username,
+      email,
+      passwordHash: hashedPassword,
+      role: userRole,
+      profileImageUrl: defaultProfileImageUrl
+    });
+
+    await user.save();
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        profileImageUrl: user.profileImageUrl
+      }
+    });
+
+  } catch (err) {
+    console.error("Error creating user:", err);
+    res.status(500).json({ error: 'Internal server error. Please try again later.' });
+  }
+});
+
 // Update User Profile
 router.put('/user/update', authenticateUser, upload.single('profileImage'), async (req, res) => {
   const { username, email, password } = req.body;
