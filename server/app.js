@@ -64,7 +64,7 @@ app.get("/", async (req, res) => {
 });
 
 // Google OAuth Callback
-app.get("/google/callback", async (req, res) => {
+app.get("google/callback", async (req, res) => {
     try {
         console.log(req.query);
         const { code } = req.query;
