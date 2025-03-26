@@ -4,7 +4,7 @@
       <v-row align="center" justify="space-between" class="mb-4">
         <v-col cols="12" sm="6">
           <h1 class="text-h4 font-weight-bold">Admin Transactions</h1>
-          <p class="text-body-2">Manage transactions and view daily records.</p>
+          <p class="text-body-2">Track transactions and review daily records. This page is for customers utilizing DP Glam's rice milling services.</p>
         </v-col>
       </v-row>
   
@@ -45,7 +45,6 @@
             <v-text-field v-model.number="newTransaction.pricePerKG" label="Price per KG" type="number"></v-text-field>
             <v-text-field v-model.number="newTransaction.quantityKG" label="Quantity (KG)" type="number"></v-text-field>
             <v-text-field v-model.number="newTransaction.otherFees" label="Other Fees" type="number"></v-text-field>
-            <v-text-field v-model.number="newTransaction.change" label="Change" type="number"></v-text-field>
             <v-text-field v-model="newTransaction.notes" label="Notes"></v-text-field>
             <v-text-field 
               :model-value="calculatedTotalCost" 
@@ -53,11 +52,17 @@
               readonly
               hint="Automatically calculated"
             ></v-text-field>
-            </v-card-text>
+            <v-text-field 
+              :model-value="calculatedChange" 
+              label="Change"
+              readonly
+              hint="Automatically calculated"
+            ></v-text-field>
             <v-card-actions>
             <v-btn color="green" @click="addTransaction">Save</v-btn>
             <v-btn color="gray" @click="closeAddModal">Cancel</v-btn>
             </v-card-actions>
+            </v-card-text>
         </v-card>
         </v-dialog>
   
@@ -151,13 +156,19 @@
       };
     },
     computed: {
-          calculatedTotalCost() {
+    calculatedTotalCost() {
       return (
-        (this.newTransaction.pricePerKG * this.newTransaction.quantityKG) +
-        this.newTransaction.molinoCost +
-        this.newTransaction.otherFees -
-        this.newTransaction.change
+        (this.newTransaction.pricePerKG * this.newTransaction.quantityKG)
       );
+    },
+    calculatedChange() {
+      return(
+        (this.newTransaction.pricePerKG * this.newTransaction.quantityKG)
+        -
+        this.newTransaction.molinoCost
+        -
+        this.newTransaction.otherFees
+      )
     }
   },
     methods: {
@@ -184,7 +195,8 @@
         // Add calculated total cost to payload
         const payload = {
           ...this.newTransaction,
-          totalCost: this.calculatedTotalCost
+          totalCost: this.calculatedTotalCost,
+          change: this.calculatedChange
         };
 
         await axios.post(

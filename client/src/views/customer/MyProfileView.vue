@@ -1,118 +1,171 @@
 <template>
-  <div class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="w-full max-w-md p-8 bg-white border border-gray-300 rounded-lg shadow-lg">
-      <h2 class="text-2xl font-semibold text-center mb-6">Update Profile</h2>
-
-      <form @submit.prevent="updateProfile">
-        <div class="flex justify-center mb-4">
-          <img 
-            v-if="profileImageUrl" 
-            :src="profileImageUrl" 
-            alt="Profile Image" 
-            class="w-24 h-24 rounded-full border-2 border-gray-300 shadow-sm"
-          />
-          <input 
-            type="file" 
-            @change="handleFileUpload" 
-            class="mt-2 text-sm text-gray-600"
-          />
+  <div class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white shadow-2xl rounded-xl overflow-hidden">
+      <div class="bg-green-500 text-white p-6 text-center">
+        <h2 class="text-2xl font-bold">Update Profile</h2>
       </div>
-        <!-- Username -->
-        <div class="mb-4">
-          <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-          <input 
-            type="text" 
-            id="username" 
-            v-model="form.username" 
-            placeholder="Enter new username" 
-            class="mt-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-          />
+      
+      <form @submit.prevent="updateProfile" class="p-6 space-y-6">
+        <!-- Profile Image Upload -->
+        <div class="flex flex-col items-center">
+          <div class="relative">
+            <img 
+              :src="profileImageUrl || 'https://dpglam-storage-bucket.s3.ap-southeast-2.amazonaws.com/default-user-icon.jpg'" 
+              alt="Profile" 
+              class="w-32 h-32 rounded-full object-cover border-4 border-blue-300 shadow-lg mb-4"
+            />
+            <label 
+              class="absolute bottom-0 right-0 bg-green-500 text-white rounded-full p-2 cursor-pointer hover:bg-green-600 transition-colors"
+            >
+              <input 
+                type="file" 
+                @change="handleFileUpload" 
+                class="hidden"
+                accept="image/jpeg,image/png,image/jpg"
+              />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>
+            </label>
+          </div>
+          
+          <p v-if="imageError" class="text-red-500 text-sm mt-2">
+            {{ imageError }}
+          </p>
         </div>
 
-        <!-- Email -->
-        <div class="mb-4">
-          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input 
-            type="email" 
-            id="email" 
-            v-model="form.email" 
-            placeholder="Enter new email" 
-            class="mt-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-          />
-        </div>
+        <!-- Input Fields -->
+        <div class="space-y-4">
+          <!-- Username -->
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+              Username
+            </label>
+            <input 
+              type="text" 
+              id="username" 
+              v-model="form.username" 
+              placeholder="Enter new username" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+            />
+          </div>
 
-        <!-- Password -->
-        <div class="mb-6">
-          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            v-model="form.password" 
-            placeholder="Enter new password" 
-            class="mt-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-          />
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+              Email
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              v-model="form.email" 
+              placeholder="Enter new email" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+            />
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+              New Password
+            </label>
+            <div class="relative">
+              <input 
+                :type="showPassword ? 'text' : 'password'" 
+                id="password" 
+                v-model="form.password" 
+                placeholder="Enter new password" 
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+              />
+              <button 
+                type="button" 
+                @click="togglePasswordVisibility" 
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-green-500"
+              >
+                <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.78zm4.261 4.261l1.265 1.265a2.995 2.995 0 012.767 2.767l3.464 3.464a4 4 0 00-6.495-6.495z" clip-rule="evenodd" />
+                  <path d="M10 7a3 3 0 012.822 2.022l-4.8-4.8A2.995 2.995 0 0110 7z" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Submit Button -->
         <button 
           type="submit" 
-          :disabled="isUpdating" 
-          class="w-full py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+          :disabled="isUpdating"
+          class="w-full py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {{ isUpdating ? "Updating..." : "Update Profile" }}
         </button>
 
         <!-- Error and Success Messages -->
-        <div v-if="errorMessage" class="text-red-500 text-center mt-4">
-          <p>{{ errorMessage }}</p>
+        <div 
+          v-if="errorMessage" 
+          class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg text-center"
+        >
+          {{ errorMessage }}
         </div>
-        <div v-if="successMessage" class="text-green-500 text-center mt-4">
-          <p>{{ successMessage }}</p>
+        <div 
+          v-if="successMessage" 
+          class="bg-green-50 border border-green-300 text-green-700 px-4 py-3 rounded-lg text-center"
+        >
+          {{ successMessage }}
+        </div>
+
+        <!-- Delete Account Section -->
+        <div class="border-t pt-6 mt-6">
+          <button 
+            type="button"
+            @click="showDeleteModal = true" 
+            class="w-full py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition-all duration-300"
+          >
+            Delete My Account
+          </button>
         </div>
       </form>
 
-      <!-- Delete Account Section -->
-      <button 
-        @click="showDeleteModal = true" 
-        class="mt-6 w-full py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-      >
-        Delete My Account
-      </button>
-
       <!-- Confirmation Modal -->
-      <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg w-96">
-          <h3 class="text-xl font-semibold mb-4">Are you sure you want to delete your account?</h3>
-          <div class="flex justify-between">
-            <button 
-              @click="deleteAccount" 
-              :disabled="isDeleting"
-              class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600"
-            >
-              {{ isDeleting ? "Deleting..." : "Yes, Delete" }}
-            </button>
-            <button 
-              @click="showDeleteModal = false" 
-              class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
-            >
-              Cancel
-            </button>
+      <div 
+        v-if="showDeleteModal" 
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      >
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md">
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Confirm Account Deletion</h3>
+            <p class="text-gray-600 mb-6">
+              Are you sure you want to delete your account? This action cannot be undone.
+            </p>
+            <div class="flex space-x-4">
+              <button 
+                @click="deleteAccount" 
+                :disabled="isDeleting"
+                class="flex-1 bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ isDeleting ? "Deleting..." : "Yes, Delete" }}
+              </button>
+              <button 
+                @click="showDeleteModal = false" 
+                class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-300"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
-
-      <!-- Link to another page, e.g., registration -->
-      <p class="text-center mt-4 text-sm">
-        Need to change your details? 
-        <router-link to="/profile" class="text-blue-500 hover:text-blue-700">Go back to profile</router-link>
-      </p>
     </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
-import { AuthService } from '@/services/auth'; // Assuming you have AuthService to handle token logic
+import { AuthService } from '@/services/auth';
 
 export default {
   data() {
@@ -123,15 +176,18 @@ export default {
         password: ''
       },
       profileImageUrl: '',
+      profileImage: null,
       isUpdating: false,
-      isDeleting: false, // Tracks deletion state
+      isDeleting: false,
       errorMessage: '',
       successMessage: '',
-      showDeleteModal: false // Controls the visibility of the confirmation modal
+      showDeleteModal: false,
+      showPassword: false,
+      imageError: ''
     };
   },
   mounted() {
-    this.loadUserFromToken(); // Load user data when component is mounted
+    this.loadUserFromToken();
   },
   methods: {
     async loadUserFromToken() {
@@ -139,41 +195,50 @@ export default {
 
       if (token) {
         try {
-          const decodedToken = AuthService.decodeToken(token); // Assuming AuthService has this method
-          this.form.username = decodedToken.username || 'N/A';
-          this.form.email = decodedToken.email || 'N/A';
+          const decodedToken = AuthService.decodeToken(token);
+          this.form.username = decodedToken.username || '';
+          this.form.email = decodedToken.email || '';
           this.profileImageUrl = decodedToken.profileImageUrl || 'https://dpglam-storage-bucket.s3.ap-southeast-2.amazonaws.com/default-user-icon.jpg';
         } catch (error) {
-          this.errorMessage = 'Failed to decode token';
+          this.errorMessage = 'Failed to load user data';
           console.error('Error decoding token:', error);
         }
       } else {
-        this.errorMessage = 'No token found';
+        this.errorMessage = 'Please log in to update your profile';
       }
+    },
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
     },
     handleFileUpload(event) {
       const file = event.target.files[0];
+      this.imageError = ''; // Reset error message
 
       if (file) {
-        const fileSizeMB = file.size / (1024 * 1024); // Convert bytes to MB
+        const fileSizeMB = file.size / (1024 * 1024);
         const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
 
         if (!allowedTypes.includes(file.type)) {
-          this.errorMessage = "Only JPEG, JPG, and PNG formats are allowed.";
+          this.imageError = "Only JPEG, JPG, and PNG formats are allowed.";
           return;
         }
 
         if (fileSizeMB > 25) {
-          this.errorMessage = "File size must be at least 25MB.";
+          this.imageError = "File size must be less than 25MB.";
           return;
         }
 
-        this.errorMessage = "";
         this.profileImage = file;
         this.profileImageUrl = URL.createObjectURL(file);
       }
     },
     async updateProfile() {
+      // Basic validation
+      if (!this.form.username && !this.form.email && !this.form.password && !this.profileImage) {
+        this.errorMessage = 'Please provide at least one update';
+        return;
+      }
+
       this.isUpdating = true;
       this.errorMessage = '';
       this.successMessage = '';
@@ -188,17 +253,20 @@ export default {
         const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/user/update`, formData, {
           headers: { 
             'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${AuthService.getToken()}` // Add token here
+            'Authorization': `Bearer ${AuthService.getToken()}`
           }
         });
 
-        this.successMessage = response.data.message;
+        this.successMessage = response.data.message || 'Profile updated successfully';
 
         if (response.data.profileImageUrl) {
           this.profileImageUrl = response.data.profileImageUrl;
         }
+
+        // Optional: Update token or refresh user data
+        this.loadUserFromToken();
       } catch (error) {
-        this.errorMessage = error.response ? error.response.data.error : 'Something went wrong. Please try again.';
+        this.errorMessage = error.response?.data?.error || 'Something went wrong. Please try again.';
       } finally {
         this.isUpdating = false;
       }
@@ -226,7 +294,7 @@ export default {
         }, 3000);
 
       } catch (error) {
-        this.errorMessage = error.response ? error.response.data.error : 'Failed to delete account';
+        this.errorMessage = error.response?.data?.error || 'Failed to delete account';
       } finally {
         this.isDeleting = false;
         this.showDeleteModal = false;

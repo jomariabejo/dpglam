@@ -7,6 +7,7 @@
         <span class="text-green-600 font-bold">${{ product.price.toFixed(2) }}</span>
       </div>
       <button
+        @click="displayAlert"
         class="mt-4 w-full bg-green-500 text-white py-2 rounded-md hover:bg-blue-600 transition"
       >
         Add to Cart
@@ -26,6 +27,11 @@
       return {
         defaultImage: 'https://via.placeholder.com/150'
       };
+    },
+    methods: {
+      displayAlert() {
+        alert("Add to Cart feature is still in development, and there have been challenges with integrating PayPal Sandbox for payments.")
+      }
     }
   };
   </script>
