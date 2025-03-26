@@ -75,7 +75,7 @@ export default {
     async handleGoogleLogin() {
       try {
           // Redirect to Google OAuth URL
-          window.location.href = `http://localhost:5000/`;
+          window.location.href = `https://dpglam-backend.onrender.com`;
         } catch (error) {
           console.error("Google login error:", error);
         }
